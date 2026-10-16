@@ -1,26 +1,102 @@
 @import "tailwindcss";
 
+/* Identidade Rocha Academy: preto, vermelho e branco. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ink: #0b0b0b; /* preto principal */
+  --ink-2: #1a1a1a; /* superfícies escuras */
+  --ink-3: #2a2a2a; /* bordas no escuro */
+  --paper: #ffffff;
+  --paper-2: #f4f4f4; /* fundo do admin */
+  --line: #d9d9d9; /* bordas no claro */
+  --muted: #5c5c5c; /* texto secundário no claro (7:1 em branco) */
+  --muted-dark: #a3a3a3; /* texto secundário no escuro (8:1 em preto) */
+  --red: #d7141a; /* preenchimentos; branco em cima = 5.2:1 */
+  --red-hover: #b10f14;
+  --red-bright: #ff4d4f; /* texto vermelho sobre preto = 6:1 */
+  --red-soft: #fde8e8;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-line: var(--line);
+  --color-muted: var(--muted);
+  --color-muted-dark: var(--muted-dark);
+  --color-red: var(--red);
+  --color-red-hover: var(--red-hover);
+  --color-red-bright: var(--red-bright);
+  --color-red-soft: var(--red-soft);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-anton), Impact, "Arial Narrow", sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--paper-2);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+:focus-visible {
+  outline: 3px solid var(--red);
+  outline-offset: 2px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.spinner {
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 9999px;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+/* ---- @xyflow/react: sobrescreve as variáveis da biblioteca com a identidade ---- */
+.rocha-flow .react-flow {
+  --xy-background-color: var(--paper-2);
+  --xy-background-pattern-dots-color-default: #bdbdbd;
+  --xy-edge-stroke-default: var(--ink);
+  --xy-edge-stroke-width-default: 2;
+  --xy-edge-stroke-selected-default: var(--red);
+  --xy-connectionline-stroke-default: var(--red);
+  --xy-connectionline-stroke-width-default: 2;
+  --xy-attribution-background-color-default: rgba(255, 255, 255, 0.8);
+  --xy-minimap-background-color-default: var(--paper);
+  --xy-minimap-mask-background-color-default: rgba(11, 11, 11, 0.08);
+  --xy-minimap-node-background-color-default: var(--ink);
+  --xy-minimap-node-stroke-color-default: transparent;
+  --xy-controls-button-background-color-default: var(--paper);
+  --xy-controls-button-background-color-hover-default: var(--paper-2);
+  --xy-controls-button-color-default: var(--ink);
+  --xy-controls-button-color-hover-default: var(--red);
+  --xy-controls-button-border-color-default: var(--line);
+  --xy-controls-box-shadow-default: 0 1px 3px rgba(0, 0, 0, 0.15);
+  --xy-handle-background-color-default: var(--ink);
+  --xy-handle-border-color-default: var(--paper);
+  --xy-selection-background-color-default: rgba(215, 20, 26, 0.08);
+  --xy-selection-border-default: 1px dashed var(--red);
+  --xy-node-border-radius-default: 0;
+  font-family: var(--font-sans);
+}
+.rocha-flow .react-flow__handle {
+  width: 14px;
+  height: 14px;
+  border-width: 2px;
+}
+.rocha-flow .react-flow__handle:hover,
+.rocha-flow .react-flow__handle.connectingfrom {
+  background: var(--red);
+}
+.rocha-flow .react-flow__edge.selected .react-flow__edge-path,
+.rocha-flow .react-flow__edge:focus .react-flow__edge-path {
+  stroke: var(--red);
+  stroke-width: 3;
 }

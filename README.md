@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Rocha Academy — qualificação de leads
 
-## Getting Started
+Formulário público em passos (`/aplicacao`) que leva cada lead por um caminho decidido pelas respostas, e painel admin (`/admin`) com lista de leads, editor visual de fluxo (grafo), rascunho/publicar e analytics de funil.
 
-First, run the development server:
+Stack: Next.js 16 (App Router) · React 19 · TypeScript estrito · Tailwind CSS 4 · Prisma 7 + `@prisma/adapter-pg` · Postgres · `jose` · `@xyflow/react` 12.
+
+## Rodar localmente
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env          # preencha DATABASE_URL, ADMIN_PASSWORD, SESSION_SECRET
+npm install                   # roda `prisma generate` no postinstall
+npx prisma migrate deploy     # aplica prisma/migrations no banco
+npm run dev                   # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Formulário: `http://localhost:3000/aplicacao?origin=instagram` (ou `/?origin=...`, que redireciona preservando a query).
+- Admin: `http://localhost:3000/admin` (senha = `ADMIN_PASSWORD`).
+- Se existir `.env.local`, ele ganha de `.env`. Confira a linha `Environments:` no log do `next dev`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Verificações:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm test            # motor de fluxo + migração do formato antigo
+npx tsc --noEmit
+npx eslint .
+npm run build
+```
 
-## Learn More
+## Estrutura
 
-To learn more about Next.js, take a look at the following resources:
+| Caminho | O que é |
+| --- | --- |
+| `lib/flow.ts` | Lógica pura e tipos do fluxo (`resolveNextNode`, validação, fluxo padrão, conversão do formato antigo). Sem Prisma: é importado por componentes client. |
+| `lib/flow-db.ts` | Somente servidor: `getPublishedGraph`, `getDraftGraph`, `saveDraftGraph`, `publishDraftGraph` e a migração lazy. |
+| `lib/analytics.ts` | Agregação do funil sobre `Lead.visited`. |
+| `lib/auth.ts`, `proxy.ts` | JWT HS256 em cookie `rocha_admin_session` (30 dias) e proteção de `/admin` e `/api/admin`. |
+| `app/aplicacao` | Formulário público (`Wizard`). |
+| `app/api/leads` | Avanço do lead; a próxima etapa é calculada no servidor a partir do grafo publicado. |
+| `app/admin` | Dashboard de leads. |
+| `app/admin/fluxo` | Editor visual, pré-visualização e barra de analytics. |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Regra de roteamento
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Ao sair de uma etapa, vale a **primeira** seta (na ordem) cujas tags exigidas estão todas nas tags acumuladas do lead. Se nenhuma bater, vale a **última** seta. A ordem das setas de uma etapa pode ser trocada no painel da conexão (Prioridade ↑/↓).
 
-## Deploy on Vercel
+## Deploy (GitHub + Vercel + Neon)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Crie um repositório **privado** vazio no GitHub e faça push deste projeto.
+2. `vercel link` (conecta ao repositório) e `vercel install neon` (cria o Postgres e injeta `DATABASE_URL` e `DATABASE_URL_UNPOOLED`).
+3. `vercel env add ADMIN_PASSWORD` e `vercel env add SESSION_SECRET` em production, preview e development. Use valores aleatórios fortes (`openssl rand -base64 24` / `openssl rand -hex 32`).
+4. Migrations contra o banco real usando a URL **sem pooler**:
+   ```bash
+   DATABASE_URL="$DATABASE_URL_UNPOOLED" npx prisma migrate deploy
+   ```
+5. `vercel deploy --prod`.
+6. Em produção: percorra o formulário no celular, entre no admin, edite, salve e publique o fluxo, e apague os leads de teste.

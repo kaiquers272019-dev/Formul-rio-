@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Lead {
+  id          String   @id @default(cuid())
+  name        String?
+  phone       String?
+  origin      String?
+  status      String   @default("frio") // "hot" | "frio"
+  contacted   Boolean  @default(false)
+  answers     Json     @default("{}") // { [nodeId]: { optionId, label } }
+  tags        String[] @default([]) // tags acumuladas das opções respondidas
+  visited     Json     @default("[]") // [{ nodeId, at }] log append-only para analytics
+  outcomeId   String?
+  qualified   Boolean?
+  currentStep String   @default("intro")
+  completed   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([createdAt])
+  @@index([completed])
+}
+
+model FlowConfig {
+  id        String   @id @default("default")
+  steps     Json // grafo PUBLICADO (o que o formulário público usa)
+  draft     Json? // rascunho do editor
+  updatedAt DateTime @updatedAt
+}
