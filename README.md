@@ -48,9 +48,6 @@ Ao sair de uma etapa, vale a **primeira** seta (na ordem) cujas tags exigidas es
 1. Crie um repositório **privado** vazio no GitHub e faça push deste projeto.
 2. `vercel link` (conecta ao repositório) e `vercel install neon` (cria o Postgres e injeta `DATABASE_URL` e `DATABASE_URL_UNPOOLED`).
 3. `vercel env add ADMIN_PASSWORD` e `vercel env add SESSION_SECRET` em production, preview e development. Use valores aleatórios fortes (`openssl rand -base64 24` / `openssl rand -hex 32`).
-4. Migrations contra o banco real usando a URL **sem pooler**:
-   ```bash
-   DATABASE_URL="$DATABASE_URL_UNPOOLED" npx prisma migrate deploy
-   ```
+4. Migrations: o `npm run build` roda `prisma migrate deploy` sozinho quando há banco configurado, usando `DATABASE_URL_UNPOOLED` (sem pooler) se existir. Sem banco, o build passa e as migrations são puladas.
 5. `vercel deploy --prod`.
 6. Em produção: percorra o formulário no celular, entre no admin, edite, salve e publique o fluxo, e apague os leads de teste.
