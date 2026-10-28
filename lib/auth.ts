@@ -27,13 +27,25 @@ export async function verifySessionToken(token: string | undefined): Promise<boo
   }
 }
 
-/** Comparação em tempo constante para a senha. */
-export function passwordMatches(input: string): boolean {
-  const expected = process.env.ADMIN_PASSWORD;
-  if (!expected) return false;
+/** Comparação em tempo constante. */
+function safeEqual(input: string, expected: string): boolean {
   const a = new TextEncoder().encode(input);
   const b = new TextEncoder().encode(expected);
   let diff = a.length ^ b.length;
   for (let i = 0; i < Math.max(a.length, b.length); i++) diff |= (a[i] ?? 0) ^ (b[i] ?? 0);
   return diff === 0;
+}
+
+/** Usuário do painel: ADMIN_USERNAME, ou "admin" se não estiver definido. */
+export function adminUsername(): string {
+  return process.env.ADMIN_USERNAME?.trim() || "admin";
+}
+
+/** Confere usuário (sem diferenciar maiúsculas) e senha. */
+export function credentialsMatch(username: string, password: string): boolean {
+  const expectedPassword = process.env.ADMIN_PASSWORD;
+  if (!expectedPassword) return false;
+  const userOk = safeEqual(username.trim().toLowerCase(), adminUsername().toLowerCase());
+  const passOk = safeEqual(password, expectedPassword);
+  return userOk && passOk;
 }
